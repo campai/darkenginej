@@ -2,6 +2,7 @@ package mna.thedarkenginej.engine;
 
 import mna.thedarkenginej.config.EngineConfig;
 import mna.thedarkenginej.engine.exception.EngineInitException;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -18,12 +19,12 @@ import java.util.Objects;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
-import static org.lwjgl.vulkan.VK10.VK_API_VERSION_1_0;
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
+import static org.lwjgl.vulkan.VK10.*;
 
 public class DarkEngineJ implements GameEngine {
     private final EngineConfig engineConfig;
@@ -55,6 +56,9 @@ public class DarkEngineJ implements GameEngine {
                 .sType(VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
                 .pNext(0)
                 .pApplicationInfo(appInfo);
+
+        PointerBuffer requiredExtensions = glfwGetRequiredInstanceExtensions();
+        vulkanInfo.ppEnabledExtensionNames(requiredExtensions);
 
         vkInstance = new VkInstance(windowHandle, vulkanInfo);
     }
@@ -122,6 +126,8 @@ public class DarkEngineJ implements GameEngine {
     private void cleanUp() {
         glfwFreeCallbacks(windowHandle);
         glfwDestroyWindow(windowHandle);
+
+        vkDestroyInstance(vkInstance, null);
 
         glfwTerminate();
         Objects.requireNonNull(glfwSetErrorCallback(null)).free();

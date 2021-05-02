@@ -34,3 +34,4 @@ build/
 
 ### Linux specific IDEA files ###
 .attach_pid*
+hs_err_pid*.log

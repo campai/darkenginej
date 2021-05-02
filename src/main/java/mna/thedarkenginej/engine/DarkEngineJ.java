@@ -8,6 +8,10 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
@@ -17,10 +21,14 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memUTF8;
+import static org.lwjgl.vulkan.VK10.VK_API_VERSION_1_0;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
 public class DarkEngineJ implements GameEngine {
     private final EngineConfig engineConfig;
     private long windowHandle;
+    private VkInstance vkInstance;
 
     public DarkEngineJ(EngineConfig engineConfig) {
         this.engineConfig = engineConfig;
@@ -29,10 +37,26 @@ public class DarkEngineJ implements GameEngine {
     @Override
     public void run() {
         initEngine();
+        initVulkan();
 
         gameLoop();
 
         cleanUp();
+    }
+
+    private void initVulkan() {
+        VkApplicationInfo appInfo = VkApplicationInfo.calloc()
+                .sType(VK_STRUCTURE_TYPE_APPLICATION_INFO)
+                .pApplicationName(memUTF8("Dark Engine J"))
+                .pEngineName(memUTF8(""))
+                .apiVersion(VK_API_VERSION_1_0);
+
+        VkInstanceCreateInfo vulkanInfo = VkInstanceCreateInfo.calloc()
+                .sType(VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
+                .pNext(0)
+                .pApplicationInfo(appInfo);
+
+        vkInstance = new VkInstance(windowHandle, vulkanInfo);
     }
 
     private void gameLoop() {
